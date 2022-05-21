@@ -1,9 +1,10 @@
 import os
 import logging
 import pathlib
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+import item_service
 
 app = FastAPI()
 logger = logging.getLogger("uvicorn")
@@ -20,12 +21,16 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "Hello, world!"}
+    return item_service.get_all_items()
 
 @app.post("/items")
-def add_item(name: str = Form(...)):
+def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile = File()):
     logger.info(f"Receive item: {name}")
-    return {"message": f"item received: {name}"}
+    return item_service.insert_item(name, category)
+
+@app.get("/search")
+def search_items(keyword: str):
+    return item_service.search_item(keyword)
 
 @app.get("/image/{items_image}")
 async def get_image(items_image):
