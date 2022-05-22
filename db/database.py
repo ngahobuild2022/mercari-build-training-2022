@@ -21,5 +21,19 @@ c.execute("""ALTER TABLE items
     ADD image TEXT
 """)
 
+# Remove the category column & add a new table for categories
+c.execute("ALTER TABLE items DROP COLUMN category")
+c.execute("""CREATE TABLE categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT
+)""")
+c.execute("ALTER TABLE items ADD COLUMN category_id INTEGER REFERENCES categories(id)")
+
+# Add some data to categories table & update relevant records in items table
+categories_list = [('fashion',), ('school supplies',)]
+c.executemany('INSERT INTO categories (name) VALUES (?)', categories_list)
+linked_items_categories_list = [(1, 1), (2, 2), (1, 3)]
+c.executemany('UPDATE items SET category_id=(?) WHERE id=(?)', linked_items_categories_list)
+
 conn.commit()
 conn.close()
